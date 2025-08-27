@@ -91,6 +91,12 @@ async def all_users_handler(message: types.Message):
         await message.answer("В базе пока нет пользователей.")
         return
 
+    text = "👥 Пользователи в базе:\n\n"
+    for user_id, username in users:
+        text += f"ID: {user_id}, username: @{username if username else 'нет'}\n"
+
+    await message.answer(text)
+
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
     add_user(message.from_user.id, message.from_user.username)
@@ -144,7 +150,7 @@ async def callbacks(call: types.CallbackQuery):
 
 async def main():
     init_db()
-    await dp.start_polling(bot)
+    await dp.start_polling(bot,skip_updates=True)
 
 if __name__ == "__main__":
     asyncio.run(main())
