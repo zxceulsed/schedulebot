@@ -1,4 +1,5 @@
 import sqlite3
+from typing import Optional
 
 DB_NAME = "database.db"
 
@@ -13,8 +14,8 @@ def init_db():
             username TEXT
         )
     """)
-
-def add_user(user_id: int, username: str | None):
+    
+def add_user(user_id: int, username: Optional[str]):
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
 
