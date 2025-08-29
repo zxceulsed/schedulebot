@@ -11,7 +11,7 @@ from furri import get_random_furry_image
 
 
 
-TOKEN = "6374810081:AAG2YazUJqWkPJp8vZw4cwfirodwAj2W6WY"
+TOKEN = "8132234913:AAGmrItgHHGqjMAwPJaJAMQj5PTkz5RDWMk"
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
