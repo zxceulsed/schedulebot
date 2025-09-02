@@ -6,7 +6,7 @@ from aiogram.filters import Command
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from db import init_db, add_user, get_all_users
-from schedule import schedule
+from schedule import schedule1, schedule2
 from furri import get_random_furry_image
 
 
@@ -17,8 +17,7 @@ bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
 moscow_tz = pytz.timezone("Europe/Moscow")
-
-# Словарь сокращённых и полных названий
+count = 0
 DAY_NAMES = {
     "ПН": "Понедельник",
     "ВТ": "Вторник",
@@ -36,18 +35,26 @@ def get_day(offset=0) -> str:
     idx = (today.weekday() + offset) % 7
     return days[idx]
 
+def get_schedule(day: str) -> list:
+    if is_first_week():
+        return schedule1.get(day, [])
+    else:
+        return schedule2.get(day, [])
+
+
 def format_schedule(day: str) -> str:
-    """Форматирование расписания для дня"""
-    full_day = DAY_NAMES.get(day, day)  # получаем полное название
+    full_day = DAY_NAMES.get(day, day)
 
     if day == "ВС":
         return "Выходной!"
 
-    lessons = schedule.get(day, [])
+    lessons = get_schedule(day)
     if not lessons:
         return f"📭 На {full_day} занятий нет"
 
-    text = f"📅 {full_day}, группа 10903723.\n"
+    week_info = get_week_info()
+    text = f"📅 {full_day}, группа 10903723.\n{week_info}\n"
+
     for lesson in lessons:
         t = lesson["time"]
         subj = lesson["subject"]
@@ -57,9 +64,9 @@ def format_schedule(day: str) -> str:
         ltype = lesson.get("type", "")
 
         if ltype:
-            text += f"\n⏰ {t}\n      • ({ltype}) {subj} {teacher} а {room}, корп. {frame}\n"
+            text += f"\n⏰ {t}\n      • ({ltype}) {subj} {teacher}, ауд. {room}, корп. {frame}\n"
         else:
-            text += f"\n⏰ {t}\n      • {subj} {teacher} а {room}, корп. {frame}\n"
+            text += f"\n⏰ {t}\n      • {subj} {teacher}, ауд. {room}, корп. {frame}\n"
 
     return text
 
@@ -95,7 +102,6 @@ def days_menu(row_size: int = 2):
     return InlineKeyboardMarkup(inline_keyboard=kb)
 
 
-# ====================== Вспомогательные ======================
 
 def get_user_name(user: types.User) -> str:
     if user.first_name:
@@ -105,7 +111,6 @@ def get_user_name(user: types.User) -> str:
     return "Студент"
 
 
-# ====================== Хэндлеры ======================
 
 @dp.message(Command("all"))
 async def all_users_handler(message: types.Message):
@@ -129,17 +134,16 @@ async def cmd_start(message: types.Message):
     text = (
         f"👋 Привет, <b>{name}</b>!\n\n"
         f"Это бот расписания (<b>cveulxd</b>) 📚\n"
-        f"Группа: <b>10903723</b>\n\n"
+        f"Группа: <b>10903723</b>\n"
+        f"{get_week_info()}\n\n"   # <<< добавлено сюда
         f"Выбирай действие ниже 👇"
     )
 
     await message.answer(
         text,
-        reply_markup=main_menu(),  # inline меню
+        reply_markup=main_menu(),
         parse_mode="HTML"
     )
-
-    # отправляем reply клавиатуру
     await message.answer("Для быстрого доступа жми кнопку ниже 👇", reply_markup=reply_menu())
 
 @dp.message(lambda msg: msg.text == "🏠 Главное меню")
@@ -148,17 +152,15 @@ async def reply_main_menu(message: types.Message):
     text = (
         f"🏫 <b>Главное меню</b>\n\n"
         f"Привет, <b>{name}</b>! Здесь ты можешь посмотреть расписание группы <b>10903723</b>.\n"
+        f"{get_week_info()}\n\n"   # <<< добавлено сюда
         f"Выбери нужный пункт ниже 👇"
     )
 
     await message.answer(text, reply_markup=main_menu(), parse_mode="HTML")
 
-# ====================== Callback-обработчик ======================
-
 @dp.callback_query()
 async def callbacks(call: types.CallbackQuery):
     data = call.data
-
     if data == "today":
         await call.message.edit_text(format_schedule(get_day(0)), reply_markup=main_menu())
     elif data == "tomorrow":
@@ -167,6 +169,7 @@ async def callbacks(call: types.CallbackQuery):
         await call.message.edit_text(
             "📅 <b>Выбери день недели</b>\n\n"
             "Нажми на кнопку ниже, чтобы посмотреть расписание на выбранный день.\n"
+            f"{get_week_info()}\n\n" 
             "Все занятия для группы <b>10903723</b>.",
             reply_markup=days_menu(row_size=3),
             parse_mode="HTML"
@@ -191,7 +194,25 @@ async def callbacks(call: types.CallbackQuery):
             await call.answer("Не удалось загрузить фурри :(", show_alert=True)
 
 
-# ====================== Запуск ======================
+
+def get_number_week() -> int:
+    today = datetime.today().date()   # ✅ получаем объект date
+    start_date = datetime(2025, 9, 1).date()
+    delta_days = (today - start_date).days
+    week_number = delta_days // 7 + 1
+    return week_number
+
+def is_first_week() -> bool:
+    return get_number_week() % 2 == 1
+
+def get_week_info() -> str:
+    number = get_number_week()
+    if is_first_week():
+        return f"Неделя №{number}"
+    else:
+        return f"Неделя №{number}"
+
+
 
 async def main():
     init_db()
