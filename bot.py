@@ -53,7 +53,7 @@ def format_schedule(day: str) -> str:
         return f"📭 На {full_day} занятий нет"
 
     week_info = get_week_info()
-    text = f"📅 {full_day}, группа 10903723.\n{week_info}\n"
+    text = f"\n📅 {full_day}, группа 10903723.\n{week_info}\n"
 
     for lesson in lessons:
         t = lesson["time"]
@@ -73,7 +73,8 @@ def format_schedule(day: str) -> str:
 
 def reply_menu():
     kb = [
-        [KeyboardButton(text="🏠 Главное меню")]
+        [KeyboardButton(text="🏠 Главное меню")],
+        [KeyboardButton(text="💾 Гугл диск")]
     ]
     return ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True)
 
@@ -125,6 +126,9 @@ async def all_users_handler(message: types.Message):
 
     await message.answer(text)
 
+@dp.message(lambda msg: msg.text == "💾 Гугл диск")
+async def reply_main_menu(message: types.Message):
+    await message.answer("<a href='https://drive.google.com/drive/folders/1Jb8rQLEG9z5uf068cAkeIsRJu0WXljxP'> Ссылка на гугл диск димасика</a>",parse_mode="HTML")
 
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
@@ -196,7 +200,7 @@ async def callbacks(call: types.CallbackQuery):
 
 
 def get_number_week() -> int:
-    today = datetime.today().date()   # ✅ получаем объект date
+    today = datetime.today().date()
     start_date = datetime(2025, 9, 1).date()
     delta_days = (today - start_date).days
     week_number = delta_days // 7 + 1
