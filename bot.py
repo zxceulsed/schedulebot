@@ -35,6 +35,7 @@ def get_day(offset=0) -> str:
     idx = (today.weekday() + offset) % 7
     return days[idx]
 
+
 def get_schedule(day: str) -> list:
     if is_first_week():
         return schedule1.get(day, [])
@@ -199,22 +200,20 @@ async def callbacks(call: types.CallbackQuery):
 
 
 
+
 def get_number_week() -> int:
     today = datetime.today().date()
     start_date = datetime(2025, 9, 1).date()
     delta_days = (today - start_date).days
     week_number = delta_days // 7 + 1
-    return week_number
+    return 1 if week_number % 2 == 1 else 2
+
 
 def is_first_week() -> bool:
-    return get_number_week() % 2 == 1
+    return get_number_week() == 1
 
 def get_week_info() -> str:
-    number = get_number_week()
-    if is_first_week():
-        return f"Неделя №{number}"
-    else:
-        return f"Неделя №{number}"
+    return f"Неделя №{get_number_week()}"
 
 
 
