@@ -9,9 +9,13 @@ from db import init_db, add_user, get_all_users
 from schedule import schedule1, schedule2
 from furri import get_random_furry_image
 
+from aiogram.client.session.aiohttp import AiohttpSession
+
+session = AiohttpSession(timeout=60)  # вместо дефолтных ~5 секунд
+bot = Bot(token=TOKEN, session=session)
+
 TOKEN = "8132234913:AAGmrItgHHGqjMAwPJaJAMQj5PTkz5RDWMk"
 
-bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
 moscow_tz = pytz.timezone("Europe/Moscow")
