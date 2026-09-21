@@ -14,7 +14,7 @@ from aiogram.client.session.aiohttp import AiohttpSession
 session = AiohttpSession(timeout=60)  # вместо дефолтных ~5 секунд
 
 
-TOKEN = "8132234913:AAGmrItgHHGqjMAwPJaJAMQj5PTkz5RDWMk"
+TOKEN = "8132234913:AAE2bWLcUp80QDjm89GSHeaIH_Qmc5mlFQ4"
 bot = Bot(token=TOKEN, session=session)
 dp = Dispatcher()
 
